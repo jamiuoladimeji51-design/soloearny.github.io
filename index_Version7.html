@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Solo Earn — Complete Platform (Dashboard, Games, Payouts NGN)</title>
+  <style>
+    :root{
+      --bg:#071226; --card:#071827; --accent:#4f46e5; --muted:#9fb0c6;
+      --glass: rgba(255,255,255,0.03);
+      --success:#10b981; --danger:#ef4444;
+      --tab-bg: rgba(255,255,255,0.02);
+      --flash: #f59e0b;
+    }
+    *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;}
+    body{margin:0;background:linear-gradient(180deg,#041028 0%, #071827 100%);color:#e6eef8;min-height:100vh;display:flex;flex-direction:column;}
+    .wrap{max-width:1100px;margin:22px auto;padding:18px;flex:1;width:100%;}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
+    h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
+    .brand-badge{background:linear-gradient(90deg,var(--accent),#06b6d4);padding:6px 10px;border-radius:8px;font-weight:700;color:#06202b}
+    .top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .btn{background:var(--accent);border:none;padding:9px 12px;border-radius:10px;color:white;cursor:pointer;font-weight:600;transition:0.2s}
+    .btn:hover{opacity:0.9}
+    .btn.ghost{background:transparent;border:1px solid var(--glass);color:var(--muted)}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;border:1px solid var(--glass);box-shadow:0 6px 18px rgba(2,8,20,0.6)}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:16px;}
+    .section-title{font-weight:700;margin-bottom:8px}
+    .small{font-size:13px;color:var(--muted)}
+    .games-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .game-tile{padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:0.2s}
+    .game-tile:hover{background:rgba(255,255,255,0.04)}
+    .game-tile h3{margin:0;font-size:15px}
+    ul.leader{list-style:none;padding-left:0;margin:0;display:flex;flex-direction:column;gap:8px}
+    ul.leader li{display:flex;justify-content:space-between;padding:6px;border-radius:8px;background:rgba(255,255,255,0.02);font-size:12px}
+    .assistant{display:flex;flex-direction:column;gap:8px;height:420px}
+    .assistant .chat{flex:1;overflow:auto;padding:10px;border-radius:8px;background:rgba(0,0,0,0.06);font-size:12px}
+    .assistant .input{display:flex;gap:8px}
+    input[type="text"], input[type="email"], input[type="password"], select, textarea{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted);font-size:13px}
+    input:focus, textarea:focus, select:focus{outline:none;border-color:var(--accent)}
+    .modal{position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(2,6,23,0.8);display:flex;align-items:center;justify-content:center;z-index:60;padding:12px}
+    .modal .box{background:#071225;padding:16px;border-radius:12px;min-width:320px;border:1px solid var(--glass);max-height:90vh;overflow:auto;max-width:600px;width:100%}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .muted{color:var(--muted)}
+    .success{color:var(--success)}
+    .danger{color:var(--danger)}
+    .stat-box{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;flex:1}
+    .stat-box .label{font-size:11px;color:var(--muted)}
+    .stat-box .value{font-size:18px;font-weight:700;color:var(--accent);margin-top:4px}
+    .tabbar{position:fixed;left:0;right:0;bottom:0;background:#071225;border-top:1px solid rgba(255,255,255,0.03);display:flex;justify-content:space-around;padding:8px 6px;z-index:80;width:100%}
+    .tab{flex:1;text-align:center;padding:8px 6px;color:var(--muted);cursor:pointer;border-radius:8px;font-size:12px;transition:0.2s}
+    .tab.active{color:white;background:var(--tab-bg)}
+    .hint{font-size:12px;color:var(--muted)}
+    .flash-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--flash);margin-left:6px;vertical-align:middle;box-shadow:0 0 6px rgba(245,158,11,0.8);animation:pulse 1.5s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.1)}}
+    .progress-bar{width:100%;height:6px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden;margin-top:6px}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),#06b6d4);transition:width 0.3s}
+    .msg{margin:6px 0;padding:8px 10px;border-radius:8px;line-height:1.3;font-size:12px}
+    .msg.user{margin-left:auto;background:linear-gradient(90deg,#4f46e5,#06b6d4);color:#06202b;max-width:80%;font-weight:600}
+    .msg.bot{background:rgba(255,255,255,0.03);color:var(--muted);max-width:80%}
+    @media (max-width:980px){.grid{grid-template-columns:1fr;}.games-list{grid-template-columns:1fr}.wrap{padding-bottom:80px;}.tabbar{display:flex}.assistant{height:300px}}
+    @media (max-width:600px){.games-list{grid-template-columns:1fr}h1{font-size:16px}.btn{padding:8px 10px;font-size:12px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1><span class="brand-badge">Solo Earn</span> <span class="small">Play • Earn • Withdraw (NGN)</span></h1>
+      <div class="top-actions" id="topControls"></div>
+    </header>
+
+    <!-- HOME TAB -->
+    <div id="homeTab" class="card" style="margin-bottom:12px;display:block;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div>
+          <div class="small">Balance (Coins)</div>
+          <div style="font-size:26px;font-weight:700;color:var(--accent)" id="homeBalance">0</div>
+          <div class="muted" style="font-size:12px">Conversion: 100 coins = ₦1</div>
+        </div>
+        <div style="text-align:right">
+          <div class="small">Quick Actions</div>
+          <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+            <button class="btn" id="homeClaimBtn">Claim +100 <span class="flash-dot"></span></button>
+            <button class="btn ghost" id="homeSpinBtn">Spin</button>
+            <button class="btn ghost" id="openDashBtn">Dashboard</button>
+          </div>
+          <div style="margin-top:8px" class="small">NGN: ₦<span id="homeNGN">0.00</span></div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 320px;gap:12px">
+        <div>
+          <div class="section-title">Featured Games</div>
+          <div class="games-list" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+            <div class="game-tile" data-game="blockbuster">
+              <h3>🎬 Blockbuster</h3>
+              <div class="hint">Guess movie from hints</div>
+              <button class="btn ghost">Play</button>
+            </div>
+            <div class="game-tile" data-game="mathquiz">
+              <h3>🧮 Math Quiz</h3>
+              <div class="hint">Quick math rounds</div>
+              <button class="btn ghost">Play</button>
+            </div>
+            <div class="game-tile" data-game="survey">
+              <h3>📋 Survey</h3>
+              <div class="hint">Earn by answering</div>
+              <button class="btn ghost">Play</button>
+            </div>
+            <div class="game-tile" data-game="more">
+              <h3>🎮 More Games</h3>
+              <div class="hint">Browse all games</div>
+              <button class="btn ghost">Browse</button>
+            </div>
+          </div>
+        </div>
+
+        <aside>
+          <div class="card">
+            <div class="section-title">AI Assistant</div>
+            <div class="assistant">
+              <div class="chat" id="assistantChat">
+                <div class="small" style="opacity:0.8">Ask me anything about withdrawals, games or rewards.</div>
+              </div>
+              <div class="input" style="margin-top:6px">
+                <input id="assistantInput" placeholder="Ask..." />
+                <button class="btn" id="assistantSend">Send</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <div class="section-title">Leaderboard</div>
+            <ul class="leader" id="leaderboard"></ul>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <div class="section-title">Activity</div>
+            <div id="log" class="small" style="max-height:200px;overflow:auto"></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- GAMES TAB -->
+    <div id="gamesTab" style="display:none">
+      <section class="card">
+        <div class="section-title">All Games</div>
+        <div class="small">Tap a game tile to start playing.</div>
+        <div style="margin-top:12px" class="games-list" id="gamesList">
+          <!-- games injected here -->
+        </div>
+      </section>
+    </div>
+
+    <!-- DASHBOARD TAB -->
+    <div id="dashboardTab" style="display:none">
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div class="section-title">Dashboard</div>
+          <div style="display:flex;gap:8px">
+            <div class="stat-box">
+              <div class="label">Coins</div>
+              <div class="value" id="dashCoins">0</div>
+            </div>
+            <div class="stat-box">
+              <div class="label">NGN Value</div>
+              <div class="value">₦<span id="dashNGN">0.00</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <div class="small">Daily Bonus</div>
+            <div class="row" style="margin-top:6px">
+              <button id="dashClaimBtn" class="btn">Claim +100</button>
+              <div class="small muted" id="dashClaimInfo"></div>
+            </div>
+
+            <div style="margin-top:12px">
+              <div class="small">Spin Wheel (48h cooldown)</div>
+              <div class="row" style="margin-top:6px">
+                <button id="dashSpinBtn" class="btn">Spin</button>
+                <div class="small muted" id="dashSpinInfo"></div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px">
+              <div class="small">Profile Completion</div>
+              <div class="progress-bar" style="margin-top:6px">
+                <div class="progress-fill" id="profileProgress" style="width:0%"></div>
+              </div>
+              <div class="small muted" id="profilePercent">0% complete</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card">
+              <div class="small">Achievements</div>
+              <div id="achList" style="margin-top:8px" class="small muted">No achievements yet</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ACCOUNT/ME TAB -->
+    <div id="accountTab" style="display:none">
+      <section class="card">
+        <div class="section-title">Me — Account & Payouts</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+          <div>
+            <div class="small">Profile</div>
+            <label class="small">Display name</label>
+            <input id="acctName" type="text" />
+            <label class="small" style="margin-top:8px">Email</label>
+            <input id="acctEmail" type="email" disabled />
+            <label class="small" style="margin-top:8px">Phone</label>
+            <input id="acctPhone" type="text" placeholder="+234..." />
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button id="saveAcctBtn" class="btn">Save</button>
+              <button id="changePassBtn" class="btn ghost">Change Pass</button>
+            </div>
+
+            <hr style="opacity:0.06;margin:12px 0"/>
+
+            <div class="small">Email Verification</div>
+            <div style="margin-top:6px">
+              <div id="verifyStatus" class="small muted">Not verified</div>
+              <input id="verifyCode" placeholder="6-digit code" style="margin-top:6px" />
+              <div style="display:flex;gap:8px;margin-top:6px">
+                <button id="sendVerifyBtn" class="btn ghost">Send Code</button>
+                <button id="applyVerifyBtn" class="btn">Verify</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card">
+              <div class="small">Withdraw (NGN)</div>
+
+              <label class="small" style="margin-top:8px">Bank</label>
+              <select id="bankSelect">
+                <option value="">Select bank</option>
+                <option>GTBank</option>
+                <option>Access Bank</option>
+                <option>First Bank</option>
+                <option>Zenith Bank</option>
+                <option>UBA</option>
+                <option>Fidelity Bank</option>
+                <option>FCMB</option>
+                <option>Stanbic</option>
+                <option>Kuda</option>
+                <option>Opay</option>
+                <option>Palmpay</option>
+                <option>Moniepoint</option>
+              </select>
+
+              <label class="small" style="margin-top:8px">Account</label>
+              <input id="bankAcct" placeholder="10-11 digits" />
+
+              <label class="small" style="margin-top:8px">Account name</label>
+              <input id="bankName" placeholder="Name" />
+
+              <label class="small" style="margin-top:8px">Amount (₦)</label>
+              <input id="withdrawAmount" placeholder="e.g., 1000" />
+
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <button id="withdrawBtn" class="btn">Request Withdrawal</button>
+              </div>
+              <div id="withdrawMsg" class="small muted" style="margin-top:6px"></div>
+            </div>
+
+            <div class="card" style="margin-top:12px">
+              <div class="small">Payout History</div>
+              <div id="payoutList" style="margin-top:8px" class="small muted">No payouts yet</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer style="margin-top:12px;text-align:center;color:var(--muted);font-size:12px">
+      Solo Earn — Complete Platform. Integrate backend & payment provider for real payouts.
+    </footer>
+  </div>
+
+  <!-- Generic modal -->
+  <div id="genericModal" class="modal" style="display:none">
+    <div class="box" id="genericBox">
+      <div id="genericContent"></div>
+      <div style="text-align:right;margin-top:12px">
+        <button id="genericClose" class="btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom tab bar -->
+  <div class="tabbar" id="tabbar">
+    <div class="tab active" data-tab="homeTab">🏠 Home</div>
+    <div class="tab" data-tab="gamesTab">🎮 Games</div>
+    <div class="tab" data-tab="dashboardTab">📊 Dashboard</div>
+    <div class="tab" data-tab="accountTab">👤 Me</div>
+  </div>
+
+  <script>
+/*
+  Solo Earn — Complete single-file platform
+  - Home, Games, Dashboard, Me tabs
+  - Daily bonus (100 coins, 24h cooldown)
+  - Spin wheel (48h cooldown)
+  - Email verification
+  - NGN payout system (100 coins = ₦1)
+  - Leaderboard, achievements, activity log
+  - All data in localStorage (demo)
+*/
+
+(function(){
+  const $ = id => document.getElementById(id);
+  function now(){ return Date.now(); }
+  function log(msg){
+    const el = $('log'); if(!el) return;
+    el.innerHTML = `<div style="font-size:11px">[${new Date().toLocaleTimeString()}] ${msg}</div>` + el.innerHTML;
+  }
+
+  // Storage
+  const ACC_KEY = 'solo_accounts_v8';
+  const APP_KEY = 'solo_app_v8';
+  function saveAccounts(){ localStorage.setItem(ACC_KEY, JSON.stringify(accounts)); }
+  function loadAccounts(){ try{ return JSON.parse(localStorage.getItem(ACC_KEY))||{} }catch(e){ return {}; } }
+  function saveApp(){ localStorage.setItem(APP_KEY, JSON.stringify(app)); }
+  function loadApp(){ try{ return JSON.parse(localStorage.getItem(APP_KEY))||{} }catch(e){ return {}; } }
+
+  let accounts = Object.assign({ users:{}, current: null }, loadAccounts());
+  let app = Object.assign({ events:[], payouts:[], complaints:[], verifications:{} }, loadApp());
+
+  // Constants
+  const DAILY_COINS = 100;
+  const DAILY_MS = 24 * 60 * 60 * 1000;
+  const SPIN_MS = 48 * 60 * 60 * 1000;
+  const COINS_TO_NGN = 100; // 100 coins = ₦1
+
+  function coinsToNGN(coins){ return (coins / COINS_TO_NGN).toFixed(2); }
+  function ngnToCoins(ngn){ return Math.round(Number(ngn) * COINS_TO_NGN); }
+
+  // Tabs
+  document.querySelectorAll('.tabbar .tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tabbar .tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const id = tab.dataset.tab;
+      document.querySelectorAll('[id$="Tab"]').forEach(el => el.style.display = 'none');
+      $(id).style.display = 'block';
+      if(id === 'gamesTab') loadGamesList();
+      if(id === 'dashboardTab') updateDashboard();
+      if(id === 'accountTab') updateAccountUI();
+    });
+  });
+
+  // AUTH
+  function openAuth(type){
+    const html = type === 'signup' ? `
+      <div style="display:flex;justify-content:space-between;align-items:center"><strong>Create account</strong></div>
+      <div style="margin-top:8px">
+        <label class="small">Display name</label><input id="su_name" type="text" />
+        <label class="small" style="margin-top:8px">Email</label><input id="su_email" type="email" />
+        <label class="small" style="margin-top:8px">Password (6+ chars)</label><input id="su_pass" type="password" />
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button id="su_submit" class="btn">Create</button>
+          <button id="su_signin" class="btn ghost">Sign in</button>
+        </div>
+        <div id="su_msg" class="small" style="margin-top:8px;color:var(--muted)"></div>
+      </div>` : `
+      <div style="display:flex;justify-content:space-between;align-items:center"><strong>Sign in</strong></div>
+      <div style="margin-top:8px">
+        <label class="small">Email</label><input id="si_email" type="email" />
+        <label class="small" style="margin-top:8px">Password</label><input id="si_pass" type="password" />
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button id="si_submit" class="btn">Sign in</button>
+          <button id="si_signup" class="btn ghost">Create</button>
+        </div>
+        <div id="si_msg" class="small" style="margin-top:8px;color:var(--muted)"></div>
+      </div>`;
+    
+    showModal('Auth', html);
+    setTimeout(() => {
+      if(type === 'signup'){
+        $('su_signup')?.remove();
+        $('su_signin').onclick = () => openAuth('signin');
+        $('su_submit').onclick = handleSignup;
+      } else {
+        $('si_signup').onclick = () => openAuth('signup');
+        $('si_submit').onclick = handleSignin;
+      }
+    }, 10);
+  }
+
+  async function hashPassword(pwd){
+    const enc = new TextEncoder();
+    const h = await crypto.subtle.digest('SHA-256', enc.encode(pwd));
+    return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  async function handleSignup(){
+    const name = $('su_name').value.trim();
+    const email = $('su_email').value.trim().toLowerCase();
+    const pass = $('su_pass').value;
+    const msg = $('su_msg');
+    if(!name||!email||!pass){ msg.textContent = 'All required'; return; }
+    if(pass.length < 6){ msg.textContent = '6+ chars'; return; }
+    if(accounts.users[email]){ msg.textContent = 'Account exists'; return; }
+    msg.textContent = 'Creating...';
+    try{
+      const hash = await hashPassword(pass);
+      accounts.users[email] = {
+        displayName: name, passwordHash: hash, coins: 0, payouts: [],
+        lastDailyClaim: 0, lastSpin: 0, achievements: [],
+        referralCode: 'REF' + Math.random().toString(36).slice(2,8).toUpperCase(),
+        emailVerified: false, profile: {phone: ''}, isAdmin: false
+      };
+      accounts.current = email;
+      saveAccounts();
+      msg.style.color = '#10b981';
+      msg.textContent = 'Account created!';
+      log(`Account created: ${email}`);
+      setTimeout(() => { $('genericModal').style.display = 'none'; renderTop(); updateAllUI(); }, 600);
+    } catch(e){
+      msg.textContent = 'Error';
+    }
+  }
+
+  async function handleSignin(){
+    const email = $('si_email').value.trim().toLowerCase();
+    const pass = $('si_pass').value;
+    const msg = $('si_msg');
+    if(!email||!pass){ msg.textContent = 'All required'; return; }
+    const u = accounts.users[email];
+    if(!u){ msg.textContent = 'Not found'; return; }
+    const hash = await hashPassword(pass);
+    if(hash !== u.passwordHash){ msg.textContent = 'Wrong password'; return; }
+    accounts.current = email;
+    saveAccounts();
+    msg.style.color = '#10b981';
+    msg.textContent = 'Signed in!';
+    log(`Signed in: ${email}`);
+    setTimeout(() => { $('genericModal').style.display = 'none'; renderTop(); updateAllUI(); }, 400);
+  }
+
+  function signOut(){
+    accounts.current = null;
+    saveAccounts();
+    renderTop();
+    updateAllUI();
+    log('Signed out');
+  }
+
+  // UI UPDATES
+  function renderTop(){
+    const tc = $('topControls');
+    tc.innerHTML = '';
+    if(accounts.current && accounts.users[accounts.current]){
+      const u = accounts.users[accounts.current];
+      const node = document.createElement('div');
+      node.style.display = 'flex'; node.style.gap = '10px'; node.style.alignItems = 'center';
+      node.innerHTML = `<div class="small" style="opacity:0.9">Hi,</div><strong>${esc(u.displayName)}</strong><span style="background:rgba(255,255,255,0.02);padding:6px 8px;border-radius:6px;color:var(--accent);font-weight:600">${u.coins}</span>`;
+      const dashBtn = document.createElement('button');
+      dashBtn.className = 'btn ghost'; dashBtn.textContent = 'Dashboard'; dashBtn.onclick = () => document.querySelector('[data-tab="dashboardTab"]').click();
+      const outBtn = document.createElement('button');
+      outBtn.className = 'btn ghost'; outBtn.textContent = 'Sign out'; outBtn.onclick = signOut;
+      tc.appendChild(node); tc.appendChild(dashBtn); tc.appendChild(outBtn);
+    } else {
+      const inBtn = document.createElement('button');
+      inBtn.className = 'btn'; inBtn.textContent = 'Sign in'; inBtn.onclick = () => openAuth('signin');
+      const upBtn = document.createElement('button');
+      upBtn.className = 'btn ghost'; upBtn.textContent = 'Sign up'; upBtn.onclick = () => openAuth('signup');
+      tc.appendChild(inBtn); tc.appendChild(upBtn);
+    }
+    updateAllUI();
+  }
+
+  function updateAllUI(){
+    const coins = accounts.current && accounts.users[accounts.current] ? accounts.users[accounts.current].coins || 0 : 0;
+    const ngn = coinsToNGN(coins);
+    if($('homeBalance')) $('homeBalance').textContent = coins;
+    if($('homeNGN')) $('homeNGN').textContent = ngn;
+    if($('dashCoins')) $('dashCoins').textContent = coins;
+    if($('dashNGN')) $('dashNGN').textContent = ngn;
+    renderLeaderboard();
+  }
+
+  function renderLeaderboard(){
+    const list = Object.keys(accounts.users).map(e => ({e, coins: accounts.users[e].coins||0, name: accounts.users[e].displayName})).sort((a,b) => b.coins - a.coins);
+    const el = $('leaderboard');
+    if(!el) return;
+    el.innerHTML = '';
+    list.slice(0,10).forEach((p, i) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${i+1}. ${esc(p.name)}</span><strong>${p.coins}</strong>`;
+      el.appendChild(li);
+    });
+  }
+
+  // DAILY & SPIN
+  $('homeClaimBtn').onclick = $('dashClaimBtn').onclick = () => claimDaily();
+  async function claimDaily(){
+    if(!accounts.current){ alert('Sign in first'); return; }
+    const u = accounts.users[accounts.current];
+    if(now() - (u.lastDailyClaim || 0) < DAILY_MS){
+      const hrs = Math.ceil((DAILY_MS - (now() - u.lastDailyClaim)) / 3600000);
+      alert(`Try again in ~${hrs}h`);
+      return;
+    }
+    u.coins = (u.coins || 0) + DAILY_COINS;
+    u.lastDailyClaim = now();
+    saveAccounts();
+    updateAllUI();
+    log(`+${DAILY_COINS} coins claimed`);
+    alert(`+${DAILY_COINS} coins!`);
+  }
+
+  $('homeSpinBtn').onclick = $('dashSpinBtn').onclick = () => openSpin();
+  const wheelPrizes = [50, 100, 150, 200, 300, 500];
+  function openSpin(){
+    if(!accounts.current){ alert('Sign in'); return; }
+    const u = accounts.users[accounts.current];
+    if(now() - (u.lastSpin || 0) < SPIN_MS){
+      const hrs = Math.ceil((SPIN_MS - (now() - u.lastSpin)) / 3600000);
+      alert(`Available in ~${hrs}h`);
+      return;
+    }
+    const prize = wheelPrizes[Math.floor(Math.random() * wheelPrizes.length)];
+    u.coins = (u.coins || 0) + prize;
+    u.lastSpin = now();
+    saveAccounts();
+    updateAllUI();
+    log(`Spun wheel: +${prize}`);
+    alert(`You won ${prize} coins!`);
+  }
+
+  // GAMES
+  function loadGamesList(){
+    const list = $('gamesList');
+    const games = [
+      {id: 'blockbuster', title: '🎬 Blockbuster', hint: 'Guess movie'},
+      {id: 'mathquiz', title: '🧮 Math Quiz', hint: 'Quick math'},
+      {id: 'survey', title: '📋 Survey', hint: 'Answer Q'},
+      {id: 'memory', title: '🧠 Memory', hint: 'Match pairs'},
+      {id: 'reaction', title: '⚡ Reaction', hint: 'Test reflex'},
+      {id: 'trivial', title: '🧩 Trivial', hint: 'Answer Q'}
+    ];
+    list.innerHTML = games.map(g => `
+      <div class="game-tile" data-game="${g.id}">
+        <h3>${g.title}</h3>
+        <div class="hint">${g.hint}</div>
+        <button class="btn ghost" onclick="playGame('${g.id}')">Play</button>
+      </div>`).join('');
+  }
+
+  window.playGame = function(id){
+    if(!accounts.current){ alert('Sign in'); return; }
+    if(id === 'blockbuster') openBlockbuster();
+    else if(id === 'mathquiz') openMathQuiz();
+    else if(id === 'survey') openSurvey();
+    else showModal('Game', `<div class="small">${id} placeholder — coming soon!</div>`);
+  };
+
+  function openBlockbuster(){
+    const movies = ['Avatar', 'Titanic', 'Inception', 'The Matrix', 'Interstellar'];
+    const movie = movies[Math.floor(Math.random() * movies.length)];
+    const hint = movie.slice(0, 3) + '*'.repeat(movie.length - 3);
+    showModal('Blockbuster', `
+      <div class="small">Guess the movie: <strong>${hint}</strong></div>
+      <input id="bbAnswer" placeholder="Movie name" style="margin-top:8px" />
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="bbSubmit" class="btn">Submit</button>
+        <button id="bbClose" class="btn ghost">Close</button>
+      </div>
+      <div id="bbMsg" class="small" style="margin-top:8px"></div>`);
+    setTimeout(() => {
+      $('bbSubmit').onclick = () => {
+        const ans = $('bbAnswer').value.toLowerCase();
+        if(ans === movie.toLowerCase()){
+          accounts.users[accounts.current].coins += 50;
+          saveAccounts(); updateAllUI();
+          $('bbMsg').textContent = `Correct! +50 coins`;
+          log(`Blockbuster completed: +50`);
+        } else {
+          $('bbMsg').textContent = `Wrong. Answer: ${movie}`;
+        }
+      };
+      $('bbClose').onclick = () => $('genericModal').style.display = 'none';
+    }, 10);
+  }
+
+  function openMathQuiz(){
+    let round = 0, score = 0;
+    const rounds = 3;
+    function nextRound(){
+      if(round >= rounds){
+        const reward = score * 20;
+        accounts.users[accounts.current].coins += reward;
+        saveAccounts(); updateAllUI();
+        showModal('Results', `<div class="small">Score: ${score}/${rounds} → +${reward} coins</div><button class="btn" onclick="document.getElementById('genericModal').style.display='none'">OK</button>`);
+        log(`MathQuiz: +${reward}`);
+        return;
+      }
+      round++;
+      const a = Math.floor(Math.random() * 20) + 1;
+      const b = Math.floor(Math.random() * 20) + 1;
+      const ops = ['+', '-', '*'];
+      const op = ops[Math.floor(Math.random() * 3)];
+      let ans;
+      if(op === '+') ans = a + b;
+      else if(op === '-') ans = a - b;
+      else ans = a * b;
+      showModal('Math Quiz', `
+        <div class="small">Q${round}/${rounds}: ${a} ${op} ${b} = ?</div>
+        <input id="mqAns" type="text" placeholder="Answer" style="margin-top:8px" />
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="mqSubmit" class="btn">Submit</button>
+          <button id="mqQuit" class="btn ghost">Quit</button>
+        </div>
+        <div id="mqMsg" class="small" style="margin-top:8px"></div>`);
+      setTimeout(() => {
+        $('mqSubmit').onclick = () => {
+          const val = Number($('mqAns').value);
+          if(val === ans){ score++; $('mqMsg').textContent = 'Correct!'; } else { $('mqMsg').textContent = `Wrong: ${ans}`; }
+          setTimeout(() => nextRound(), 800);
+        };
+        $('mqQuit').onclick = () => nextRound();
+      }, 10);
+    }
+    nextRound();
+  }
+
+  function openSurvey(){
+    showModal('Survey', `
+      <div class="small">How did you hear about Solo Earn?</div>
+      <select id="surveyAns" style="margin-top:8px">
+        <option>Social Media</option>
+        <option>Friend</option>
+        <option>Ad</option>
+        <option>Search</option>
+      </select>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="surveySubmit" class="btn">Submit (+30)</button>
+        <button id="surveyClose" class="btn ghost">Close</button>
+      </div>`);
+    setTimeout(() => {
+      $('surveySubmit').onclick = () => {
+        accounts.users[accounts.current].coins += 30;
+        saveAccounts(); updateAllUI();
+        $('genericModal').style.display = 'none';
+        log('Survey completed: +30');
+        alert('+30 coins!');
+      };
+      $('surveyClose').onclick = () => $('genericModal').style.display = 'none';
+    }, 10);
+  }
+
+  // DASHBOARD
+  function updateDashboard(){
+    if(!accounts.current) return;
+    const u = accounts.users[accounts.current];
+    const pct = computeProfileCompletion(u);
+    if($('profileProgress')) $('profileProgress').style.width = pct + '%';
+    if($('profilePercent')) $('profilePercent').textContent = pct + '% complete';
+    if($('dashClaimInfo')) $('dashClaimInfo').textContent = checkCooldown(u.lastDailyClaim, DAILY_MS);
+    if($('dashSpinInfo')) $('dashSpinInfo').textContent = checkCooldown(u.lastSpin, SPIN_MS);
+    if($('achList')) $('achList').textContent = (u.achievements && u.achievements.length) ? u.achievements.join(', ') : 'No achievements';
+  }
+
+  function computeProfileCompletion(u){
+    let pct = 0;
+    if(u.displayName && u.displayName.trim()) pct += 25;
+    if(u.emailVerified) pct += 25;
+    if(u.profile && u.profile.phone) pct += 15;
+    const p = u.payouts && u.payouts.length;
+    if(p) pct += 20;
+    if(u.coins && u.coins > 100) pct += 15;
+    return Math.min(100, pct);
+  }
+
+  function checkCooldown(lastTime, ms){
+    const remaining = ms - (now() - (lastTime || 0));
+    if(remaining <= 0) return 'Available';
+    const hrs = Math.ceil(remaining / 3600000);
+    return `In ${hrs}h`;
+  }
+
+  // ACCOUNT
+  function updateAccountUI(){
+    if(!accounts.current) return;
+    const u = accounts.users[accounts.current];
+    $('acctName').value = u.displayName || '';
+    $('acctEmail').value = accounts.current;
+    $('acctPhone').value = (u.profile && u.profile.phone) || '';
+    $('verifyStatus').textContent = u.emailVerified ? '✓ Verified' : '✗ Not verified';
+    $('verifyStatus').style.color = u.emailVerified ? '#10b981' : '#ef4444';
+    renderPayoutHistory();
+  }
+
+  $('saveAcctBtn').onclick = () => {
+    if(!accounts.current) return;
+    const u = accounts.users[accounts.current];
+    u.displayName = $('acctName').value.trim();
+    u.profile = u.profile || {};
+    u.profile.phone = $('acctPhone').value.trim();
+    saveAccounts();
+    updateAllUI();
+    alert('Profile saved');
+  };
+
+  $('changePassBtn').onclick = async () => {
+    const cur = prompt('Current password:');
+    if(!cur) return;
+    const u = accounts.users[accounts.current];
+    const hash = await hashPassword(cur);
+    if(hash !== u.passwordHash){ alert('Wrong password'); return; }
+    const newP = prompt('New password (6+):');
+    if(!newP || newP.length < 6){ alert('Invalid'); return; }
+    u.passwordHash = await hashPassword(newP);
+    saveAccounts();
+    alert('Password changed');
+  };
+
+  $('sendVerifyBtn').onclick = () => {
+    if(!accounts.current) return;
+    const code = Math.floor(100000 + Math.random() * 900000);
+    app.verifications = app.verifications || {};
+    app.verifications[accounts.current] = { code: code.toString(), expires: now() + 10 * 60000 };
+    saveApp();
+    alert(`Code (demo): ${code}`);
+    log(`Verification code sent to ${accounts.current}`);
+  };
+
+  $('applyVerifyBtn').onclick = () => {
+    if(!accounts.current) return;
+    const code = $('verifyCode').value.trim();
+    const v = app.verifications && app.verifications[accounts.current];
+    if(!v){ alert('No code sent'); return; }
+    if(now() > v.expires){ alert('Code expired'); return; }
+    if(code !== v.code){ alert('Wrong code'); return; }
+    accounts.users[accounts.current].emailVerified = true;
+    saveAccounts();
+    delete app.verifications[accounts.current];
+    saveApp();
+    updateAccountUI();
+    alert('Email verified!');
+    log(`Email verified: ${accounts.current}`);
+  };
+
+  $('withdrawBtn').onclick = () => {
+    if(!accounts.current){ alert('Sign in'); return; }
+    const u = accounts.users[accounts.current];
+    if(!u.emailVerified){ alert('Verify email first'); return; }
+    const bank = $('bankSelect').value;
+    const acct = $('bankAcct').value.trim();
+    const name = $('bankName').value.trim();
+    const amountNGN = parseFloat(($('withdrawAmount').value || '').replace(/[^0-9.]/g,'')) || 0;
+    if(!bank || !acct || !name || !amountNGN){ $('withdrawMsg').textContent = 'All fields required'; return; }
+    const coinsNeeded = ngnToCoins(amountNGN);
+    if((u.coins || 0) < coinsNeeded){ $('withdrawMsg').textContent = 'Insufficient coins'; return; }
+    u.coins -= coinsNeeded;
+    const tx = { id: 'WD-' + Math.random().toString(36).slice(2,9).toUpperCase(), user: accounts.current, bank, account: acct, name, amountNGN, coins: coinsNeeded, status: 'requested', ts: now() };
+    app.payouts = app.payouts || [];
+    app.payouts.push(tx);
+    saveAccounts(); saveApp();
+    updateAllUI();
+    $('withdrawMsg').textContent = `Requested: ${tx.id}`;
+    log(`Withdrawal requested: ${tx.id} ₦${amountNGN}`);
+    alert(`Withdrawal requested!\nRef: ${tx.id}\nAmount: ₦${amountNGN}`);
+  };
+
+  function renderPayoutHistory(){
+    const box = $('payoutList');
+    const list = (app.payouts || []).filter(p => p.user === accounts.current);
+    if(!list.length){ box.textContent = 'No payouts'; return; }
+    box.innerHTML = list.map(p => `
+      <div style="padding:6px;background:rgba(255,255,255,0.02);border-radius:6px;margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between">
+          <strong>${p.id}</strong><span style="color:${p.status==='completed'?'#10b981':'#f59e0b'}">${p.status}</span>
+        </div>
+        <div class="small muted">₦${p.amountNGN} • ${new Date(p.ts).toLocaleDateString()}</div>
+      </div>`).join('');
+  }
+
+  // ASSISTANT
+  $('assistantSend').onclick = () => {
+    const q = $('assistantInput').value.trim();
+    if(!q) return;
+    appendAssistant('You', q);
+    $('assistantInput').value = '';
+    appendAssistant('Bot', '<em>Thinking...</em>');
+    setTimeout(() => {
+      removeLastAssistant();
+      appendAssistant('Bot', assistantReply(q));
+    }, 300 + Math.random() * 400);
+  };
+
+  function appendAssistant(role, text){
+    const el = $('assistantChat');
+    const m = document.createElement('div');
+    m.className = 'msg ' + (role === 'You' ? 'user' : 'bot');
+    m.textContent = text;
+    el.appendChild(m);
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function removeLastAssistant(){
+    const el = $('assistantChat');
+    if(el.lastChild) el.removeChild(el.lastChild);
+  }
+
+  function assistantReply(q){
+    const t = q.toLowerCase();
+    if(t.includes('withdraw')) return '100 coins = ₦1. Go to Me → fill bank details → request withdrawal.';
+    if(t.includes('daily')) return 'Claim 100 coins once per 24 hours on Dashboard.';
+    if(t.includes('spin')) return 'Spin wheel every 48 hours on Dashboard. Random prize.';
+    if(t.includes('game')) return 'Play Blockbuster, Math Quiz, Survey or more. Each gives coins.';
+    return 'Ask me about withdrawals, games, daily bonus, or payouts.';
+  }
+
+  // UTILITIES
+  function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  const esc = escapeHTML;
+
+  function showModal(title, html){
+    $('genericContent').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><strong>${title}</strong></div><div style="margin-top:8px">${html}</div>`;
+    $('genericModal').style.display = 'flex';
+  }
+
+  $('genericClose').onclick = () => $('genericModal').style.display = 'none';
+
+  // Init
+  renderTop();
+  updateAllUI();
+  loadGamesList();
+  log('Solo Earn loaded');
+
+  // Save periodically
+  setInterval(() => { saveAccounts(); saveApp(); }, 60000);
+
+  window.soloEarn = { accounts, app };
+})();
+  </script>
+</body>
+</html>

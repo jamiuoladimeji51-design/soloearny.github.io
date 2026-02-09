@@ -1,0 +1,910 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Solo Earn — Admin Panel</title>
+  <style>
+    :root{
+      --bg:#0a0f1f; --card:#0f1420; --accent:#4f46e5; --muted:#9fb0c6;
+      --glass: rgba(255,255,255,0.03);
+      --success:#10b981; --danger:#ef4444; --warning:#f59e0b;
+    }
+    *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;}
+    body{margin:0;background:linear-gradient(180deg,#030610 0%, #0a0f1f 100%);color:#e6eef8;min-height:100vh;}
+    .admin-wrap{max-width:1400px;margin:0 auto;padding:18px;}
+    .admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;padding:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;border:1px solid var(--glass);}
+    h1{margin:0;font-size:22px;display:flex;align-items:center;gap:10px}
+    .admin-badge{background:linear-gradient(90deg,#ef4444,#f97316);padding:6px 10px;border-radius:8px;font-weight:700;color:white;font-size:12px}
+    .admin-top{display:flex;align-items:center;gap:12px}
+    .btn{background:var(--accent);border:none;padding:9px 12px;border-radius:10px;color:white;cursor:pointer;font-weight:600;transition:0.2s;font-size:13px}
+    .btn:hover{opacity:0.9}
+    .btn.danger{background:var(--danger)}
+    .btn.success{background:var(--success)}
+    .btn.ghost{background:transparent;border:1px solid var(--glass);color:var(--muted)}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;border:1px solid var(--glass);}
+    .section-title{font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+    .small{font-size:13px;color:var(--muted)}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .stat-box{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;text-align:center}
+    .stat-label{font-size:12px;color:var(--muted)}
+    .stat-value{font-size:22px;font-weight:700;color:var(--accent);margin-top:4px}
+    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+    th{background:rgba(255,255,255,0.02);padding:8px;text-align:left;font-weight:600;border-bottom:1px solid var(--glass)}
+    td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.01)}
+    tr:hover{background:rgba(255,255,255,0.01)}
+    input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="file"], select, textarea{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted);font-size:13px;margin-top:4px}
+    input:focus, textarea:focus, select:focus{outline:none;border-color:var(--accent)}
+    .modal{position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(2,6,23,0.8);display:flex;align-items:center;justify-content:center;z-index:60;padding:12px}
+    .modal .box{background:#0a0f1f;padding:18px;border-radius:12px;min-width:340px;border:1px solid var(--glass);max-height:90vh;overflow:auto;max-width:600px;width:100%}
+    .tab-nav{display:flex;gap:6px;border-bottom:1px solid var(--glass);margin-bottom:12px;flex-wrap:wrap}
+    .tab{padding:10px 14px;cursor:pointer;border:none;background:transparent;color:var(--muted);font-weight:600;border-bottom:2px solid transparent;transition:0.2s}
+    .tab.active{color:white;border-bottom-color:var(--accent)}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    .form-group{margin-bottom:12px}
+    .form-group label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--muted)}
+    .alert{padding:10px 12px;border-radius:8px;margin-bottom:10px;font-size:13px}
+    .alert.success{background:rgba(16,185,129,0.1);border-left:3px solid var(--success);color:var(--success)}
+    .alert.danger{background:rgba(239,68,68,0.1);border-left:3px solid var(--danger);color:var(--danger)}
+    .alert.warning{background:rgba(245,158,11,0.1);border-left:3px solid var(--warning);color:var(--warning)}
+    .badge{display:inline-block;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:600;margin-right:4px}
+    .badge.verified{background:rgba(16,185,129,0.2);color:var(--success)}
+    .badge.pending{background:rgba(245,158,11,0.2);color:var(--warning)}
+    .badge.completed{background:rgba(16,185,129,0.2);color:var(--success)}
+    .badge.admin{background:rgba(239,68,68,0.2);color:var(--danger)}
+    .sidebar{position:fixed;left:0;top:0;width:240px;height:100vh;background:#0a0f1f;border-right:1px solid var(--glass);padding:16px;overflow:auto;z-index:50}
+    .sidebar-item{padding:10px;border-radius:8px;cursor:pointer;margin-bottom:6px;color:var(--muted);transition:0.2s;font-size:13px}
+    .sidebar-item.active{background:rgba(79,70,229,0.2);color:white}
+    .sidebar-item:hover{background:rgba(255,255,255,0.04)}
+    .main-content{margin-left:240px;padding:18px}
+    .chart-placeholder{height:200px;background:rgba(255,255,255,0.02);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--muted);margin-top:10px}
+    .progress-bar{height:6px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden;margin-top:6px}
+    .progress-fill{height:100%;background:var(--accent);transition:width 0.3s}
+    @media (max-width:1024px){.grid-4{grid-template-columns:repeat(2,1fr)}.grid-3{grid-template-columns:1fr}}
+    @media (max-width:768px){.sidebar{width:0;overflow:hidden}.main-content{margin-left:0}.tab-nav{overflow-x:auto}.grid-2{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div style="padding:10px;border-bottom:1px solid var(--glass);margin-bottom:12px">
+      <div style="font-weight:700">Solo Earn Admin</div>
+      <div class="small">Control Panel</div>
+    </div>
+    <div class="sidebar-item active" data-tab="dashboard">📊 Dashboard</div>
+    <div class="sidebar-item" data-tab="users">👥 Users</div>
+    <div class="sidebar-item" data-tab="games">🎮 Games</div>
+    <div class="sidebar-item" data-tab="payouts">💰 Payouts</div>
+    <div class="sidebar-item" data-tab="complaints">📢 Complaints</div>
+    <div class="sidebar-item" data-tab="emails">📧 Email Template</div>
+    <div class="sidebar-item" data-tab="content">📝 Content & Pages</div>
+    <div class="sidebar-item" data-tab="system">⚙️ System Settings</div>
+    <div class="sidebar-item" data-tab="admins">🔐 Admin Users</div>
+    <hr style="opacity:0.1;margin:12px 0"/>
+    <div class="sidebar-item" data-tab="analytics">📈 Analytics</div>
+    <div class="sidebar-item" data-tab="logs">📋 Activity Logs</div>
+    <div style="margin-top:20px;padding:10px;background:rgba(255,255,255,0.02);border-radius:8px">
+      <div id="adminEmail" class="small"></div>
+      <button class="btn ghost" id="logoutBtn" style="width:100%;margin-top:8px">Sign out</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="admin-header">
+      <h1><span class="admin-badge">ADMIN</span> Solo Earn Control Panel</h1>
+      <div class="admin-top">
+        <button id="toggleSidebar" class="btn ghost">☰ Menu</button>
+        <button id="refreshBtn" class="btn ghost">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <!-- Dashboard Tab -->
+    <div id="dashboardTab" class="tab-content active">
+      <div class="grid-4">
+        <div class="stat-box">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value" id="statUsers">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Total Coins</div>
+          <div class="stat-value" id="statCoins">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Payouts Pending</div>
+          <div class="stat-value" id="statPayouts">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">NGN Withdrawn</div>
+          <div class="stat-value">₦<span id="statNGN">0</span></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="section-title">📊 Recent Activity</div>
+        <div id="recentActivity" class="small"></div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="section-title">⚠️ Pending Actions</div>
+        <table>
+          <thead><tr><th>Type</th><th>User</th><th>Details</th><th>Action</th></tr></thead>
+          <tbody id="pendingActions"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Users Tab -->
+    <div id="usersTab" class="tab-content">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="section-title">👥 Manage Users</div>
+          <button class="btn" id="createUserBtn">+ New User</button>
+        </div>
+        <input id="userSearch" placeholder="Search users by email or name..." style="margin-bottom:10px" />
+        <table>
+          <thead><tr><th>Email</th><th>Name</th><th>Coins</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+          <tbody id="usersList"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Games Tab -->
+    <div id="gamesTab" class="tab-content">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="section-title">🎮 Manage Games</div>
+          <button class="btn" id="uploadGameBtn">+ Upload Game</button>
+        </div>
+
+        <div class="tab-nav">
+          <button class="tab active" data-subtab="gamesList">All Games</button>
+          <button class="tab" data-subtab="gameMetrics">Metrics</button>
+        </div>
+
+        <div id="gamesList" class="tab-content active">
+          <table>
+            <thead><tr><th>Title</th><th>Reward</th><th>Plays</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="gameTable"></tbody>
+          </table>
+        </div>
+
+        <div id="gameMetrics" class="tab-content">
+          <div class="chart-placeholder">Game play metrics chart (integrate Chart.js)</div>
+          <div style="margin-top:12px">
+            <div class="small"><strong>Most Played:</strong> <span id="mostPlayed">—</span></div>
+            <div class="small"><strong>Highest Reward:</strong> <span id="highestReward">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payouts Tab -->
+    <div id="payoutsTab" class="tab-content">
+      <div class="card">
+        <div class="section-title">💰 Manage Payouts</div>
+
+        <div class="tab-nav">
+          <button class="tab active" data-subtab="payoutsList">Pending</button>
+          <button class="tab" data-subtab="payoutsCompleted">Completed</button>
+        </div>
+
+        <div id="payoutsList" class="tab-content active">
+          <table>
+            <thead><tr><th>Ref</th><th>User</th><th>Bank</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="payoutsTable"></tbody>
+          </table>
+        </div>
+
+        <div id="payoutsCompleted" class="tab-content">
+          <table>
+            <thead><tr><th>Ref</th><th>User</th><th>Amount</th><th>Completed</th></tr></thead>
+            <tbody id="payoutsCompletedTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Complaints Tab -->
+    <div id="complaintsTab" class="tab-content">
+      <div class="card">
+        <div class="section-title">📢 User Complaints</div>
+        <table>
+          <thead><tr><th>ID</th><th>User</th><th>Subject</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody id="complaintsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Email Template Tab -->
+    <div id="emailsTab" class="tab-content">
+      <div class="card">
+        <div class="section-title">📧 Email Templates</div>
+
+        <div class="tab-nav">
+          <button class="tab active" data-subtab="verificationEmail">Verification</button>
+          <button class="tab" data-subtab="payoutEmail">Payout Notification</button>
+          <button class="tab" data-subtab="welcomeEmail">Welcome</button>
+        </div>
+
+        <div id="verificationEmail" class="tab-content active">
+          <div class="form-group">
+            <label>Subject</label>
+            <input id="emailSubject1" value="Verify your email - Solo Earn" />
+          </div>
+          <div class="form-group">
+            <label>Body (HTML)</label>
+            <textarea id="emailBody1" style="height:200px">Hello {NAME},\n\nVerify your email with code: {CODE}\n\nThanks,\nSolo Earn Team</textarea>
+          </div>
+          <button class="btn success" id="saveEmail1">Save Template</button>
+        </div>
+
+        <div id="payoutEmail" class="tab-content">
+          <div class="form-group">
+            <label>Subject</label>
+            <input id="emailSubject2" value="Your payout has been processed" />
+          </div>
+          <div class="form-group">
+            <label>Body (HTML)</label>
+            <textarea id="emailBody2" style="height:200px">Hello {NAME},\n\nYour withdrawal of ₦{AMOUNT} has been processed.\n\nRef: {REF}\nBefore: {DATE}\n\nThanks!</textarea>
+          </div>
+          <button class="btn success" id="saveEmail2">Save Template</button>
+        </div>
+
+        <div id="welcomeEmail" class="tab-content">
+          <div class="form-group">
+            <label>Subject</label>
+            <input id="emailSubject3" value="Welcome to Solo Earn!" />
+          </div>
+          <div class="form-group">
+            <label>Body (HTML)</label>
+            <textarea id="emailBody3" style="height:200px">Welcome to Solo Earn, {NAME}!\n\nYou can now play games and earn coins.\n\nStart here: {PLATFORM_URL}\n\nEnjoy!</textarea>
+          </div>
+          <button class="btn success" id="saveEmail3">Save Template</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Tab -->
+    <div id="contentTab" class="tab-content">
+      <div class="card">
+        <div class="section-title">📝 Website Content</div>
+
+        <div class="tab-nav">
+          <button class="tab active" data-subtab="homepage">Home Page</button>
+          <button class="tab" data-subtab="terms">Terms</button>
+          <button class="tab" data-subtab="privacy">Privacy Policy</button>
+        </div>
+
+        <div id="homepage" class="tab-content active">
+          <div class="form-group">
+            <label>Homepage Banner Title</label>
+            <input id="bannerTitle" value="Solo Earn — Play, Earn & Withdraw" />
+          </div>
+          <div class="form-group">
+            <label>Homepage Subtitle</label>
+            <input id="bannerSubtitle" value="Earn coins by playing games, taking surveys and completing tasks." />
+          </div>
+          <div class="form-group">
+            <label>Featured Games HTML</label>
+            <textarea id="featuredGamesHTML" style="height:150px">&lt;div&gt;Add featured games list&lt;/div&gt;</textarea>
+          </div>
+          <button class="btn success">Save Changes</button>
+        </div>
+
+        <div id="terms" class="tab-content">
+          <div class="form-group">
+            <label>Terms of Service</label>
+            <textarea id="termsText" style="height:300px">Write your terms of service here...</textarea>
+          </div>
+          <button class="btn success">Save Terms</button>
+        </div>
+
+        <div id="privacy" class="tab-content">
+          <div class="form-group">
+            <label>Privacy Policy</label>
+            <textarea id="privacyText" style="height:300px">Write your privacy policy here...</textarea>
+          </div>
+          <button class="btn success">Save Policy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Settings Tab -->
+    <div id="systemTab" class="tab-content">
+      <div class="card">
+        <div class="section-title">⚙️ System Settings</div>
+
+        <div class="tab-nav">
+          <button class="tab active" data-subtab="generalSettings">General</button>
+          <button class="tab" data-subtab="paymentSettings">Payment</button>
+          <button class="tab" data-subtab="gameSettings">Game Rewards</button>
+        </div>
+
+        <div id="generalSettings" class="tab-content active">
+          <div class="form-group">
+            <label>Platform Name</label>
+            <input id="platformName" value="Solo Earn" />
+          </div>
+          <div class="form-group">
+            <label>Platform Email</label>
+            <input id="platformEmail" value="support@soloearn.app" />
+          </div>
+          <div class="form-group">
+            <label>Support Phone</label>
+            <input id="supportPhone" value="+234..." />
+          </div>
+          <div class="form-group">
+            <label>Platform URL</label>
+            <input id="platformURL" value="https://soloearn.app" />
+          </div>
+          <button class="btn success">Save Settings</button>
+        </div>
+
+        <div id="paymentSettings" class="tab-content">
+          <div class="form-group">
+            <label>Coin to NGN Conversion (coins per ₦1)</label>
+            <input id="coinConversion" type="number" value="100" />
+          </div>
+          <div class="form-group">
+            <label>Minimum Withdrawal (NGN)</label>
+            <input id="minWithdraw" type="number" value="1000" />
+          </div>
+          <div class="form-group">
+            <label>Maximum Withdrawal per day (NGN)</label>
+            <input id="maxWithdraw" type="number" value="100000" />
+          </div>
+          <div class="form-group">
+            <label>Payment Provider (Paystack/Flutterwave)</label>
+            <select id="paymentProvider">
+              <option>Paystack</option>
+              <option>Flutterwave</option>
+              <option>Manual Review</option>
+            </select>
+          </div>
+          <button class="btn success">Save Payment Settings</button>
+        </div>
+
+        <div id="gameSettings" class="tab-content">
+          <div class="form-group">
+            <label>Daily Bonus Coins</label>
+            <input id="dailyCoins" type="number" value="100" />
+          </div>
+          <div class="form-group">
+            <label>Spin Wheel Cooldown (hours)</label>
+            <input id="spinCooldown" type="number" value="48" />
+          </div>
+          <div class="form-group">
+            <label>Default Game Reward (coins)</label>
+            <input id="gameReward" type="number" value="50" />
+          </div>
+          <button class="btn success">Save Game Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Users Tab -->
+    <div id="adminsTab" class="tab-content">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="section-title">🔐 Admin Users</div>
+          <button class="btn" id="addAdminBtn">+ Add Admin</button>
+        </div>
+        <table>
+          <thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Created</th><th>Actions</th></tr></thead>
+          <tbody id="adminsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Analytics Tab -->
+    <div id="analyticsTab" class="tab-content">
+      <div class="grid-2">
+        <div class="card">
+          <div class="section-title">📈 Daily Active Users</div>
+          <div class="chart-placeholder">DAU chart (integrate Chart.js)</div>
+        </div>
+        <div class="card">
+          <div class="section-title">💰 Revenue Trend</div>
+          <div class="chart-placeholder">Revenue chart</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="section-title">🎮 Game Performance</div>
+        <table>
+          <thead><tr><th>Game</th><th>Plays</th><th>Avg Duration</th><th>Completion %</th></tr></thead>
+          <tbody id="gamePerformanceTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Logs Tab -->
+    <div id="logsTab" class="tab-content">
+      <div class="card">
+        <div class="section-title">📋 Activity Logs</div>
+        <input id="logSearch" placeholder="Search logs..." style="margin-bottom:10px" />
+        <table>
+          <thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
+          <tbody id="logsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Generic Modal -->
+  <div id="adminModal" class="modal" style="display:none">
+    <div class="box" id="adminModalBox">
+      <div id="adminModalContent"></div>
+      <div style="text-align:right;margin-top:12px">
+        <button id="adminModalClose" class="btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+/*
+  Solo Earn Admin Panel
+  - Complete admin UI for managing users, games, payouts, complaints, content
+  - Private access with admin authentication
+  - Multi-admin support with role-based control
+  - All demo data in localStorage (implement backend API for production)
+*/
+
+(function(){
+  const $ = id => document.getElementById(id);
+  function now(){ return Date.now(); }
+  function log(msg){ const el = $('recentActivity'); if(el) el.innerHTML = `<div class="small" style="margin-bottom:4px">[${new Date().toLocaleTimeString()}] ${msg}</div>` + (el.innerHTML||''); }
+
+  // Storage
+  const ADMIN_KEY = 'solo_admin_v1';
+  const ACC_KEY = 'solo_accounts_v8';
+  const APP_KEY = 'solo_app_v8';
+
+  function saveAdmin(data){ localStorage.setItem(ADMIN_KEY, JSON.stringify(data)); }
+  function loadAdmin(){ try{ return JSON.parse(localStorage.getItem(ADMIN_KEY))||{} }catch(e){ return {}; } }
+
+  let adminData = Object.assign({
+    admins: {},
+    currentAdmin: null,
+    settings: {
+      platformName: 'Solo Earn',
+      platformEmail: 'support@soloearn.app',
+      coinConversion: 100,
+      dailyCoins: 100,
+      spinCooldown: 48
+    }
+  }, loadAdmin());
+
+  // Get user data
+  function getAccounts(){ try{ return JSON.parse(localStorage.getItem(ACC_KEY))||{} }catch(e){ return {}; } }
+  function getApp(){ try{ return JSON.parse(localStorage.getItem(APP_KEY))||{} }catch(e){ return {}; } }
+
+  // Admin Auth
+  function isAdminLoggedIn(){
+    return adminData.currentAdmin && adminData.admins[adminData.currentAdmin] && adminData.admins[adminData.currentAdmin].authenticated;
+  }
+
+  function showAdminAuth(){
+    const html = `
+      <div style="display:flex;justify-content:space-between;align-items:center"><strong>Admin Login</strong></div>
+      <div style="margin-top:12px">
+        <div class="form-group">
+          <label>Admin Email</label>
+          <input id="adminAuthEmail" type="email" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input id="adminAuthPass" type="password" />
+        </div>
+        <button id="adminAuthSubmit" class="btn" style="width:100%">Sign In as Admin</button>
+        <div id="adminAuthMsg" class="small" style="margin-top:8px;color:var(--muted)"></div>
+      </div>`;
+    
+    showModal('Admin Authentication', html);
+    
+    setTimeout(() => {
+      $('adminAuthSubmit').onclick = () => {
+        const email = $('adminAuthEmail').value.trim().toLowerCase();
+        const pass = $('adminAuthPass').value;
+        const msg = $('adminAuthMsg');
+        if(!email || !pass){ msg.textContent = 'Email & password required'; return; }
+        
+        // Check if admin exists
+        if(!adminData.admins[email]){
+          // First admin - create with default credentials
+          if(email === 'admin@soloearn.app' && pass === 'admin123'){
+            adminData.admins[email] = {
+              displayName: 'Administrator',
+              passwordHash: hashSync(pass),
+              role: 'super_admin',
+              createdAt: now(),
+              authenticated: true,
+              permissions: ['all']
+            };
+            adminData.currentAdmin = email;
+            saveAdmin(adminData);
+            msg.style.color = '#10b981';
+            msg.textContent = 'Admin account created & logged in';
+            log('First admin account created');
+            setTimeout(() => { $('adminModal').style.display = 'none'; initAdmin(); }, 700);
+            return;
+          } else {
+            msg.textContent = 'Admin not found. First login use: admin@soloearn.app / admin123';
+            return;
+          }
+        }
+        
+        const admin = adminData.admins[email];
+        const passHash = hashSync(pass);
+        if(passHash === admin.passwordHash){
+          admin.authenticated = true;
+          adminData.currentAdmin = email;
+          saveAdmin(adminData);
+          msg.style.color = '#10b981';
+          msg.textContent = 'Logged in';
+          log(`Admin logged in: ${email}`);
+          setTimeout(() => { $('adminModal').style.display = 'none'; initAdmin(); }, 400);
+        } else {
+          msg.textContent = 'Invalid credentials';
+        }
+      };
+    }, 10);
+  }
+
+  // Simple sync hash (for demo)
+  function hashSync(str){
+    let h = 0;
+    for(let i = 0; i < str.length; i++){
+      h = ((h << 5) - h) + str.charCodeAt(i);
+      h = h & h;
+    }
+    return h.toString();
+  }
+
+  function showModal(title, html){
+    $('adminModalContent').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><strong>${title}</strong></div><div style="margin-top:8px">${html}</div>`;
+    $('adminModal').style.display = 'flex';
+  }
+
+  // Tab switching
+  const sidebarItems = document.querySelectorAll('.sidebar-item');
+  sidebarItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const tab = item.dataset.tab;
+      // Update sidebar
+      sidebarItems.forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+      // Update content
+      document.querySelectorAll('[id$="Tab"]').forEach(el => el.classList.remove('active'));
+      $(tab + 'Tab').classList.add('active');
+      if(tab === 'users') loadUsers();
+      if(tab === 'games') loadGames();
+      if(tab === 'payouts') loadPayouts();
+      if(tab === 'complaints') loadComplaints();
+      if(tab === 'admins') loadAdmins();
+    });
+  });
+
+  // Sub-tabs
+  document.querySelectorAll('.tab-nav .tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const subtab = tab.dataset.subtab;
+      const parent = tab.closest('.card') || tab.closest('[id$="Tab"]');
+      parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      parent.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+      tab.classList.add('active');
+      parent.querySelector('#' + subtab).classList.add('active');
+    });
+  });
+
+  // Load data functions
+  function loadUsers(){
+    const accounts = getAccounts();
+    const users = accounts.users || {};
+    const tbody = $('usersList');
+    tbody.innerHTML = '';
+    
+    Object.keys(users).forEach(email => {
+      const u = users[email];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escHTML(email)}</td>
+        <td>${escHTML(u.displayName)}</td>
+        <td>${u.coins || 0}</td>
+        <td><span class="badge ${u.emailVerified ? 'verified' : 'pending'}">${u.emailVerified ? 'Verified' : 'Pending'}</span></td>
+        <td>${new Date(u.profile?.createdAt || 0).toLocaleDateString()}</td>
+        <td><button class="btn ghost" onclick="editUser('${email}')">Edit</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function loadGames(){
+    const tbody = $('gameTable');
+    tbody.innerHTML = '';
+    // Mock games
+    const games = [
+      {id: 1, title: 'Blockbuster', reward: 50, plays: 234},
+      {id: 2, title: 'Math Quiz', reward: 30, plays: 456},
+      {id: 3, title: 'Survey', reward: 15, plays: 789}
+    ];
+    games.forEach(g => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escHTML(g.title)}</td>
+        <td>${g.reward} coins</td>
+        <td>${g.plays}</td>
+        <td><span class="badge verified">Active</span></td>
+        <td><button class="btn ghost" onclick="editGame(${g.id})">Edit</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function loadPayouts(){
+    const app = getApp();
+    const payouts = app.payouts || [];
+    const pending = payouts.filter(p => p.status === 'requested');
+    const completed = payouts.filter(p => p.status === 'completed');
+
+    const tbody1 = $('payoutsTable');
+    tbody1.innerHTML = '';
+    pending.forEach(p => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${p.id}</td>
+        <td>${escHTML(p.user)}</td>
+        <td>${escHTML(p.bank)}</td>
+        <td>₦${p.amountNGN}</td>
+        <td><span class="badge pending">Pending</span></td>
+        <td><button class="btn success" onclick="approvePayout('${p.id}')">Approve</button></td>`;
+      tbody1.appendChild(tr);
+    });
+
+    const tbody2 = $('payoutsCompletedTable');
+    tbody2.innerHTML = '';
+    completed.forEach(p => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${p.id}</td>
+        <td>${escHTML(p.user)}</td>
+        <td>₦${p.amountNGN}</td>
+        <td>${new Date(p.ts).toLocaleDateString()}</td>`;
+      tbody2.appendChild(tr);
+    });
+  }
+
+  function loadComplaints(){
+    const app = getApp();
+    const complaints = app.complaints || [];
+    const tbody = $('complaintsTable');
+    tbody.innerHTML = '';
+    complaints.forEach(c => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${c.id}</td>
+        <td>${escHTML(c.user)}</td>
+        <td>${escHTML(c.subject)}</td>
+        <td><span class="badge ${c.status === 'open' ? 'pending' : 'completed'}">${c.status}</span></td>
+        <td>${new Date(c.ts).toLocaleDateString()}</td>
+        <td><button class="btn ghost" onclick="viewComplaint('${c.id}')">View</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function loadAdmins(){
+    const tbody = $('adminsTable');
+    tbody.innerHTML = '';
+    Object.keys(adminData.admins).forEach(email => {
+      const admin = adminData.admins[email];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escHTML(email)}</td>
+        <td>${escHTML(admin.displayName)}</td>
+        <td><span class="badge admin">${admin.role}</span></td>
+        <td>${new Date(admin.createdAt).toLocaleDateString()}</td>
+        <td><button class="btn ghost" onclick="editAdmin('${email}')">Edit</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Dashboard stats
+  function updateDashboard(){
+    const accounts = getAccounts();
+    const app = getApp();
+    const users = accounts.users || {};
+    const payouts = app.payouts || [];
+
+    const totalUsers = Object.keys(users).length;
+    const totalCoins = Object.values(users).reduce((sum, u) => sum + (u.coins || 0), 0);
+    const pendingPayouts = payouts.filter(p => p.status === 'requested').length;
+    const totalNGN = payouts.filter(p => p.status === 'completed').reduce((sum, p) => sum + (p.amountNGN || 0), 0);
+
+    if($('statUsers')) $('statUsers').textContent = totalUsers;
+    if($('statCoins')) $('statCoins').textContent = totalCoins;
+    if($('statPayouts')) $('statPayouts').textContent = pendingPayouts;
+    if($('statNGN')) $('statNGN').textContent = totalNGN.toLocaleString();
+  }
+
+  // Actions
+  window.editUser = function(email){
+    const accounts = getAccounts();
+    const u = accounts.users[email];
+    const html = `
+      <div class="form-group">
+        <label>Email</label>
+        <input value="${escHTML(email)}" disabled />
+      </div>
+      <div class="form-group">
+        <label>Display name</label>
+        <input id="editUserName" value="${escHTML(u.displayName)}" />
+      </div>
+      <div class="form-group">
+        <label>Coins</label>
+        <input id="editUserCoins" type="number" value="${u.coins || 0}" />
+      </div>
+      <div class="form-group">
+        <label>Email Verified</label>
+        <select id="editUserVerified">
+          <option value="0" ${!u.emailVerified ? 'selected' : ''}>No</option>
+          <option value="1" ${u.emailVerified ? 'selected' : ''}>Yes</option>
+        </select>
+      </div>
+      <button class="btn success" onclick="saveUserEdit('${email}')">Save Changes</button>`;
+    showModal('Edit User: ' + email, html);
+  };
+
+  window.saveUserEdit = function(email){
+    const accounts = getAccounts();
+    const u = accounts.users[email];
+    u.displayName = $('editUserName').value.trim();
+    u.coins = parseInt($('editUserCoins').value, 10) || 0;
+    u.emailVerified = parseInt($('editUserVerified').value, 10) === 1;
+    localStorage.setItem(ACC_KEY, JSON.stringify(accounts));
+    log(`Admin edited user: ${email}`);
+    alert('User saved');
+    $('adminModal').style.display = 'none';
+    loadUsers();
+  };
+
+  window.approvePayout = function(id){
+    if(!confirm('Approve this payout?')) return;
+    const app = getApp();
+    const payout = app.payouts.find(p => p.id === id);
+    if(payout){
+      payout.status = 'completed';
+      localStorage.setItem(APP_KEY, JSON.stringify(app));
+      log(`Admin approved payout: ${id}`);
+      alert('Payout approved');
+      loadPayouts();
+    }
+  };
+
+  window.viewComplaint = function(id){
+    const app = getApp();
+    const c = app.complaints.find(x => x.id === id);
+    if(c){
+      showModal('Complaint: ' + c.id, `
+        <div style="margin-bottom:8px"><strong>${escHTML(c.subject)}</strong></div>
+        <div class="small muted">User: ${escHTML(c.user)}</div>
+        <div class="small muted">Date: ${new Date(c.ts).toLocaleDateString()}</div>
+        <div style="margin-top:8px">${escHTML(c.details)}</div>
+        <div style="margin-top:12px">
+          <select id="complaintStatus">
+            <option value="open" ${c.status === 'open' ? 'selected' : ''}>Open</option>
+            <option value="resolved" ${c.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+          </select>
+          <button class="btn success" onclick="saveComplaint('${id}')" style="margin-top:8px">Save Status</button>
+        </div>`);
+    }
+  };
+
+  window.saveComplaint = function(id){
+    const app = getApp();
+    const c = app.complaints.find(x => x.id === id);
+    if(c){
+      c.status = $('complaintStatus').value;
+      localStorage.setItem(APP_KEY, JSON.stringify(app));
+      log(`Admin updated complaint: ${id}`);
+      alert('Status saved');
+      $('adminModal').style.display = 'none';
+      loadComplaints();
+    }
+  };
+
+  window.editGame = function(id){
+    showModal('Edit Game', `<div class="small">Game editing - coming soon</div>`);
+  };
+
+  window.editAdmin = function(email){
+    const admin = adminData.admins[email];
+    const html = `
+      <div class="form-group">
+        <label>Email</label>
+        <input value="${escHTML(email)}" disabled />
+      </div>
+      <div class="form-group">
+        <label>Display name</label>
+        <input id="editAdminName" value="${escHTML(admin.displayName)}" />
+      </div>
+      <div class="form-group">
+        <label>Role</label>
+        <select id="editAdminRole">
+          <option value="super_admin" ${admin.role === 'super_admin' ? 'selected' : ''}>Super Admin</option>
+          <option value="admin" ${admin.role === 'admin' ? 'selected' : ''}>Admin</option>
+          <option value="moderator" ${admin.role === 'moderator' ? 'selected' : ''}>Moderator</option>
+        </select>
+      </div>
+      <button class="btn success" onclick="saveAdminEdit('${email}')">Save</button>`;
+    showModal('Edit Admin: ' + email, html);
+  };
+
+  window.saveAdminEdit = function(email){
+    const admin = adminData.admins[email];
+    admin.displayName = $('editAdminName').value.trim();
+    admin.role = $('editAdminRole').value;
+    saveAdmin(adminData);
+    log(`Admin updated admin user: ${email}`);
+    alert('Admin saved');
+    $('adminModal').style.display = 'none';
+    loadAdmins();
+  };
+
+  // Logout
+  $('logoutBtn').onclick = () => {
+    if(adminData.currentAdmin) adminData.admins[adminData.currentAdmin].authenticated = false;
+    adminData.currentAdmin = null;
+    saveAdmin(adminData);
+    location.reload();
+  };
+
+  // Sidebar toggle (mobile)
+  $('toggleSidebar').onclick = () => {
+    const sidebar = $('sidebar');
+    sidebar.style.width = sidebar.style.width === '240px' ? '0' : '240px';
+  };
+
+  $('refreshBtn').onclick = () => {
+    updateDashboard();
+    alert('Dashboard refreshed');
+  };
+
+  // Modal close
+  $('adminModalClose').onclick = () => $('adminModal').style.display = 'none';
+
+  // Utility
+  function escHTML(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // Init
+  function initAdmin(){
+    if(!isAdminLoggedIn()){
+      showAdminAuth();
+      return;
+    }
+    $('adminEmail').textContent = `Admin: ${adminData.currentAdmin}`;
+    updateDashboard();
+    loadUsers();
+    loadGames();
+    loadPayouts();
+    loadComplaints();
+    log('Admin panel initialized');
+  }
+
+  // Check admin on load
+  if(!isAdminLoggedIn()){
+    showAdminAuth();
+  } else {
+    initAdmin();
+  }
+
+  // Auto-save periodically
+  setInterval(() => { saveAdmin(adminData); }, 60000);
+
+  window.adminPanel = { adminData };
+})();
+  </script>
+</body>
+</html>
